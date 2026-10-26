@@ -12,8 +12,8 @@ Pi-hole in Docker for **this Windows PC only**. DNS is published on IPv4 and IPv
 ## Install and start
 
 ```powershell
-git clone https://github.com/rohandhamapurkar/pihole-local.git pihole
-cd pihole
+git clone https://github.com/rohandhamapurkar/pihole-local.git pihole-local
+cd pihole-local
 powershell -NoProfile -ExecutionPolicy Bypass -File .\initialize.ps1
 docker compose up -d
 ```
