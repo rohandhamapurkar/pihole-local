@@ -2,6 +2,40 @@
 
 Pi-hole in Docker for **this Windows PC only**. DNS is published on IPv4 and IPv6 loopback; the router and other devices are unchanged. Shared HTTPS belongs to [Caddy Local](https://github.com/rohandhamapurkar/caddy-local), independently of this stack.
 
+## Architecture
+
+```mermaid
+flowchart LR
+    subgraph PC["This Windows PC"]
+        Apps["Apps using system DNS"]
+        DNS["Adapter DNS settings<br/>IPv4: 127.0.0.1<br/>IPv6: ::1"]
+        Browser["Admin browser<br/>https://pihole.test/admin/"]
+    end
+
+    subgraph Network["Docker network: local-apps"]
+        Caddy["caddy-local<br/>Shared HTTPS proxy"]
+        Pihole["pihole-local<br/>Pi-hole DNS :53 and web :80"]
+    end
+
+    Upstream["Cloudflare upstream DNS<br/>1.1.1.1 and 1.0.0.1"]
+    Blocked["Blocked domain<br/>Local blocking response<br/>Default: 0.0.0.0 for IPv4"]
+    Data[("pihole-data volume<br/>Lists, settings and query history")]
+    Backup["Local dns-backup.json<br/>Original adapter DNS settings<br/>Ignored by Git"]
+
+    Apps --> DNS
+    DNS <-->|TCP and UDP 53 on loopback| Pihole
+    Pihole <-->|Allowed domain lookups| Upstream
+    Pihole -->|Blocklisted domain| Blocked
+    Browser -->|HTTPS on 127.0.0.1:443| Caddy
+    Caddy -->|HTTP to Pi-hole :80| Pihole
+    Browser -.->|Direct fallback: HTTP on 127.0.0.1:8081| Pihole
+    Pihole ---|/etc/pihole| Data
+    Backup -.->|dns.ps1 -Action Restore| DNS
+```
+
+DNS filtering and dashboard access are separate paths: DNS never passes through Caddy, and stopping Caddy does not stop filtering. All published Pi-hole ports are loopback-only, so the router and other devices are unaffected. The hosts file resolves `pihole.test` locally for the dashboard. Custom browser Secure DNS and VPN DNS can bypass the system resolver. Keep Pi-hole running while the adapter points to localhost, or restore the saved DNS settings first.
+
+
 ## Requirements
 
 - Windows, Docker Desktop with Linux containers, Docker Compose, and PowerShell.
