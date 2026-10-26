@@ -1,0 +1,32 @@
+name: pihole-local
+services:
+  pihole:
+    image: pihole/pihole:latest
+    hostname: pihole
+    environment:
+      TZ: Asia/Kolkata
+      FTLCONF_webserver_domain: pihole.test
+      FTLCONF_webserver_api_password: ${PIHOLE_PASSWORD:?Run initialize.ps1 first}
+      FTLCONF_dns_listeningMode: ALL
+      FTLCONF_dns_upstreams: '1.1.1.1;1.0.0.1'
+      FTLCONF_ntp_ipv4_active: 'false'
+      FTLCONF_ntp_ipv6_active: 'false'
+    dns:
+      - 1.1.1.1
+      - 1.0.0.1
+    ports:
+      - '127.0.0.1:53:53/tcp'
+      - '127.0.0.1:53:53/udp'
+      - '[::1]:53:53/tcp'
+      - '[::1]:53:53/udp'
+      - '127.0.0.1:8081:80'
+    volumes:
+      - pihole-data:/etc/pihole
+    networks:
+      - local-apps
+    restart: unless-stopped
+networks:
+  local-apps:
+    external: true
+volumes:
+  pihole-data:

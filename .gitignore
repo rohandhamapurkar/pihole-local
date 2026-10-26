@@ -1,0 +1,7 @@
+.env
+dns-backup.json
+dns-operation.log
+*.crt
+*.pem
+*.key
+*.log
